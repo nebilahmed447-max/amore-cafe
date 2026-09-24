@@ -17,19 +17,19 @@ const paymentMethods: Array<{ value: Order["payment"]; label: string; descriptio
 const bankDetails: Partial<Record<"CBE" | "BOA", { bank: string; accountNumber: string; accountHolder: string }>> = {
   CBE: {
     bank: "Commercial Bank of Ethiopia",
-    accountNumber: "1000709303148",
-    accountHolder: "Desalegn stotaw",
+    accountNumber: "1000515089897",
+    accountHolder: "Wizdan Mohammed",
   },
   // Add the cafe's real BOA account number and account holder here before launch.
   BOA: {
     bank: "Bank of Abyssinia",
-    accountNumber: "140115932",
-    accountHolder: "Tilahun Wegaye",
+    accountNumber: "ADD BOA ACCOUNT NUMBER",
+    accountHolder: "ADD ACCOUNT HOLDER NAME",
   },
 };
 
 const teleBirrDetails = {
-  number: "0946764424",
+  number: "094 676 4424",
   accountHolder: "Tilahun Wegaye",
 };
 
@@ -255,30 +255,33 @@ export default function Checkout(){
             <small className="mt-1 block text-[10px] leading-4 text-neutral-500">{method.description}</small>
           </label>)}
         </div>
-        {(form.payment === "CBE" || form.payment === "BOA") && bankDetails[form.payment] && (
+        {(() => {
+          const selectedBank = form.payment === "CBE" || form.payment === "BOA" ? bankDetails[form.payment] : undefined;
+          return selectedBank ? (
           <div className="mt-4 rounded-3xl border border-[var(--brand-green)]/15 bg-[var(--brand-green-soft)] p-4 sm:p-5">
             <div className="flex items-center gap-3">
               <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white text-xl shadow-sm">🏦</div>
               <div>
                 <p className="text-xs font-black uppercase tracking-wider text-[var(--brand-green)]">Bank transfer</p>
-                <h3 className="text-base font-black">{bankDetails[form.payment]!.bank}</h3>
+                <h3 className="text-base font-black">{selectedBank.bank}</h3>
               </div>
             </div>
             <div className="mt-4 rounded-2xl border border-neutral-200 bg-white p-4">
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                   <span className="block text-xs text-neutral-500">Account Number</span>
-                  <strong className="mt-1 block break-all text-xl tracking-wide text-neutral-900">{bankDetails[form.payment]!.accountNumber}</strong>
+                  <strong className="mt-1 block break-all text-xl tracking-wide text-neutral-900">{selectedBank.accountNumber}</strong>
                 </div>
-                <button type="button" onClick={async()=>{const text=bankDetails[form.payment]!.accountNumber;const ok=await copyToClipboard(text);if(ok){setCopied(true);setTimeout(()=>setCopied(false),1800)}}} className="shrink-0 rounded-xl bg-red-600 px-5 py-3 text-sm font-black text-white transition hover:bg-red-700">{copied ? "✓ Copied" : "Copy"}</button>
+                <button type="button" onClick={async()=>{const ok=await copyToClipboard(selectedBank.accountNumber);if(ok){setCopied(true);setTimeout(()=>setCopied(false),1800)}}} className="shrink-0 rounded-xl bg-red-600 px-5 py-3 text-sm font-black text-white transition hover:bg-red-700">{copied ? "✓ Copied" : "Copy"}</button>
               </div>
             </div>
             <div className="mt-3 border-t border-[var(--brand-green)]/15 pt-3 text-sm">
-              <span className="text-neutral-500">Account holder:</span> <strong>{bankDetails[form.payment]!.accountHolder}</strong>
+              <span className="text-neutral-500">Account holder:</span> <strong>{selectedBank.accountHolder}</strong>
             </div>
             <p className="mt-3 text-xs leading-5 text-neutral-600">Transfer the exact order total (including delivery fee, if applicable) to this account, then keep your transfer confirmation. Amore Cafe will verify the payment before processing the order.</p>
           </div>
-        )}
+          ) : null;
+        })()}
         {form.payment === "Tele Birr" && (
           <div className="mt-4 rounded-3xl border border-[var(--brand-green)]/15 bg-[var(--brand-green-soft)] p-4 sm:p-5">
             <div className="flex items-center gap-3">

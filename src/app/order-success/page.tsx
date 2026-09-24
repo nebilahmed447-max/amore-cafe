@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
 import { Page } from "@/components/Shell";
 import { supabase } from "@/supabase";
 
@@ -34,7 +34,7 @@ function statusDescription(status: OrderStatus) {
   }
 }
 
-export default function Success() {
+function SuccessContent() {
   const params = useSearchParams();
   const initialId = params.get("id") || "";
   const [orderId, setOrderId] = useState(initialId);
@@ -224,5 +224,13 @@ export default function Success() {
         </div>
       </main>
     </Page>
+  );
+}
+
+export default function Success() {
+  return (
+    <Suspense fallback={<div className="min-h-screen" />}>
+      <SuccessContent />
+    </Suspense>
   );
 }
