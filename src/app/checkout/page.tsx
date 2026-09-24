@@ -17,19 +17,19 @@ const paymentMethods: Array<{ value: Order["payment"]; label: string; descriptio
 const bankDetails: Partial<Record<"CBE" | "BOA", { bank: string; accountNumber: string; accountHolder: string }>> = {
   CBE: {
     bank: "Commercial Bank of Ethiopia",
-    accountNumber: "1000515089897",
-    accountHolder: "Wizdan Mohammed",
+    accountNumber: "1000709303148",
+    accountHolder: "Desalegn stotaw",
   },
   // Add the cafe's real BOA account number and account holder here before launch.
   BOA: {
     bank: "Bank of Abyssinia",
-    accountNumber: "ADD BOA ACCOUNT NUMBER",
-    accountHolder: "ADD ACCOUNT HOLDER NAME",
+    accountNumber: "140115932",
+    accountHolder: "Desalegn stotaw",
   },
 };
 
 const teleBirrDetails = {
-  number: "094 676 4424",
+  number: "0946764424",
   accountHolder: "Tilahun Wegaye",
 };
 
