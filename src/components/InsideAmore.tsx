@@ -17,7 +17,7 @@ export default function InsideAmore(){
    let active=true;
    supabase.from("inside_amore_photos").select("image_url").order("created_at",{ascending:false}).then(({data})=>{
      if(active && data?.length) setPhotos(data.map(row=>String(row.image_url)));
-   }).catch(()=>{});
+   },()=>{});
    return()=>{active=false};
  },[]);
  const images=photos.length?photos:fallback.map(x=>`https://images.unsplash.com/${x}?auto=format&fit=crop&q=78&w=900`);
