@@ -18,6 +18,7 @@ create table public.foods (
   category text not null,
   image_url text,
   prep_time integer default 12,
+  takeaway_pack_fee numeric not null default 0,
   calories integer default 0,
   rating numeric default 5,
   available boolean default true,

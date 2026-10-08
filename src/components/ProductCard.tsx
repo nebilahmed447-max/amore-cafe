@@ -1,10 +1,11 @@
 "use client";
 import Link from "next/link";
-import { Plus, Star, Clock3, Heart } from "lucide-react";
+import { Plus, Minus, Star, Clock3, Heart } from "lucide-react";
 import { Product } from "@/lib/types";
 import { useCart, useFavorites } from "./Providers";
 export default function ProductCard({product,compact=false,special=false}:{product:Product;compact?:boolean;special?:boolean}){
- const {add}=useCart();
+ const {add,items,update}=useCart();
+ const quantity=items.find(item=>item.id===product.id)?.quantity || 0;
  const {isFavorite,toggleFavorite}=useFavorites();
  const fav=isFavorite(product.id);
  return <article className={`product-card ${compact?"compact":""} ${!product.available?"is-unavailable":""}`}>
@@ -23,7 +24,15 @@ export default function ProductCard({product,compact=false,special=false}:{produ
      </div>
      {!compact&&<p className="product-desc">{product.description}</p>}
      <div className="product-meta"><span><Star size={13} fill="currentColor"/>4.6 <em>(0.5K+)</em></span><span><Clock3 size={13}/>{product.prepTime || 0} min</span></div>
-     <button onClick={()=>add(product)} disabled={!product.available} className="add-btn"><Plus size={17}/> {product.available ? "Add" : "Unavailable"}</button>
+     {quantity > 0 && product.available ? (
+      <div className="add-btn quantity-control" aria-label={`${product.name} quantity`}>
+        <button type="button" onClick={()=>update(product.id, quantity - 1)} aria-label={`Remove one ${product.name}`}><Minus size={16}/></button>
+        <span>{quantity}</span>
+        <button type="button" onClick={()=>add(product)} aria-label={`Add one more ${product.name}`}><Plus size={16}/></button>
+      </div>
+     ) : (
+      <button onClick={()=>add(product)} disabled={!product.available} className="add-btn"><Plus size={17}/> {product.available ? "Add" : "Unavailable"}</button>
+     )}
    </div>
  </article>
 }

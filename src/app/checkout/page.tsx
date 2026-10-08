@@ -57,6 +57,11 @@ function getDeliveryRule(distanceMeters:number){
   return deliveryRules.find(r => r.fee === fee && distanceMeters <= r.maxMeters) || deliveryRules[3];
 }
 
+function getTakeawayPackFee(items: Order["items"], distanceMeters: number){
+  if (distanceMeters <= 50) return 0;
+  return items.reduce((sum, item) => sum + Number(item.takeawayPackFee || 0) * item.quantity, 0);
+}
+
 async function calculateDeliveryRoute(lat:number,lng:number){
   const response = await fetch("/api/delivery-distance", {
     method: "POST",
@@ -178,7 +183,8 @@ export default function Checkout(){
     }
 
     const deliveryFee = form.orderType === "delivery" && finalRule ? finalRule.fee : 0;
-    const order:Order={id:`AM-${Date.now().toString().slice(-8)}`,createdAt:new Date().toISOString(),customer:{name:form.name.trim(),phone:normalizedPhone,address:form.address.trim(),notes:form.notes.trim()},items,orderType:form.orderType,deliveryZone:form.orderType === "delivery" && finalRule ? finalRule.value : undefined,deliveryFee,deliveryDistanceKm:form.orderType === "delivery" && finalLocation ? finalLocation.distanceMeters / 1000 : undefined,deliveryLat:form.orderType === "delivery" ? finalLocation?.lat : undefined,deliveryLng:form.orderType === "delivery" ? finalLocation?.lng : undefined,total:total+deliveryFee,status:"Pending",payment:form.payment};
+    const takeawayPackFee = form.orderType === "delivery" && finalLocation ? getTakeawayPackFee(items, finalLocation.distanceMeters) : 0;
+    const order:Order={id:`AM-${Date.now().toString().slice(-8)}`,createdAt:new Date().toISOString(),customer:{name:form.name.trim(),phone:normalizedPhone,address:form.address.trim(),notes:form.notes.trim()},items,orderType:form.orderType,deliveryZone:form.orderType === "delivery" && finalRule ? finalRule.value : undefined,deliveryFee,deliveryDistanceKm:form.orderType === "delivery" && finalLocation ? finalLocation.distanceMeters / 1000 : undefined,deliveryLat:form.orderType === "delivery" ? finalLocation?.lat : undefined,deliveryLng:form.orderType === "delivery" ? finalLocation?.lng : undefined,total:total+deliveryFee+takeawayPackFee,status:"Pending",payment:form.payment};
     let uploadedPath:string|undefined;
     try {
       if(receipt && receiptPayments.includes(form.payment)){
@@ -219,7 +225,7 @@ export default function Checkout(){
           </label>
           <label className={`cursor-pointer rounded-2xl border p-4 transition ${form.orderType==="pickup"?"border-[var(--brand-green)] bg-[var(--brand-green-soft)]":"border-neutral-200 bg-white hover:border-neutral-300"}`}>
             <input type="radio" name="orderType" value="pickup" checked={form.orderType==="pickup"} onChange={()=>{setForm({...form,orderType:"pickup"});setLocation(null);setLocationError("")}} className="sr-only"/>
-            <span className="flex items-center justify-between gap-3"><strong className="text-sm">🪑 Pickup / Dine-in</strong><span className={`h-3 w-3 rounded-full border ${form.orderType==="pickup"?"border-[var(--brand-green)] bg-[var(--brand-green)]":"border-neutral-300"}`}/></span>
+            <span className="flex items-center justify-between gap-3"><strong className="text-sm">🪑 On table/Pickup</strong><span className={`h-3 w-3 rounded-full border ${form.orderType==="pickup"?"border-[var(--brand-green)] bg-[var(--brand-green)]":"border-neutral-300"}`}/></span>
             <small className="mt-1 block text-[10px] leading-4 text-neutral-500">Pickup at the cafe or dine in at your table.</small>
           </label>
         </div>
@@ -330,8 +336,8 @@ export default function Checkout(){
       <div className="md:col-span-2 flex flex-col gap-4 border-t pt-5 sm:flex-row sm:items-center sm:justify-between">
         <div className="space-y-2 text-sm">
           <div className="flex justify-between"><span>Subtotal</span><strong>{total.toLocaleString()} ETB</strong></div>
-          {form.orderType === "delivery" && <div className="flex justify-between"><span>Delivery fee ({location?getDeliveryRule(location.distanceMeters).label:"—"})</span><strong>{(location?getDeliveryFee(location.distanceMeters):0).toLocaleString()} ETB</strong></div>}
-          <div className="flex items-end justify-between border-t pt-3"><span className="text-xs text-neutral-500">Order total</span><strong className="text-2xl">{(total + (form.orderType === "delivery" && location ? getDeliveryFee(location.distanceMeters) : 0)).toLocaleString()} ETB</strong></div>
+          {form.orderType === "delivery" && <div className="flex justify-between"><span>Delivery fee ({location?getDeliveryRule(location.distanceMeters).label:"—"})</span><strong>{(location?getDeliveryFee(location.distanceMeters):0).toLocaleString()} ETB</strong></div>}{form.orderType === "delivery" && location && location.distanceMeters > 50 && getTakeawayPackFee(items, location.distanceMeters) > 0 && <div className="flex justify-between"><span>Take-away packing</span><strong>{getTakeawayPackFee(items, location.distanceMeters).toLocaleString()} ETB</strong></div>}
+          <div className="flex items-end justify-between border-t pt-3"><span className="text-xs text-neutral-500">Order total</span><strong className="text-2xl">{(total + (form.orderType === "delivery" && location ? getDeliveryFee(location.distanceMeters) : 0) + (form.orderType === "delivery" && location ? getTakeawayPackFee(items, location.distanceMeters) : 0)).toLocaleString()} ETB</strong></div>
         </div>
         <button type="submit" disabled={submitting || !items.length} className="rounded-full bg-black px-7 py-4 text-sm font-bold text-white disabled:cursor-not-allowed disabled:opacity-50">{submitting?"Placing order…":"Place order"}</button>
       </div>

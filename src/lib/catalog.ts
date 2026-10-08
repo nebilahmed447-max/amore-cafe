@@ -19,6 +19,7 @@ export function normalizeProduct(row: Record<string, string>): Product | null {
     image: (row.image || row.image_url || "").trim(),
     description: (row.description || "").trim(),
     prepTime: Number(row.prep_time || row.prepTime || 0),
+    takeawayPackFee: Number(row.takeaway_pack_fee || row.takeawayPackFee || 0),
     popular: cleanBool(row.popular),
     fasting: cleanBool(row.fasting),
     available: row.available === undefined ? true : cleanBool(row.available, true),
@@ -55,7 +56,7 @@ function csvCell(value: unknown) {
 }
 
 export function productsToCSV(products: Product[]) {
-  const headers = ["id","name","amharic","category","price","image","description","prep_time","popular","fasting","available"];
+  const headers = ["id","name","amharic","category","price","image","description","prep_time","takeaway_pack_fee","popular","fasting","available"];
   return [headers.join(","), ...products.map(p => headers.map(h => csvCell((p as any)[h])).join(","))].join("\n");
 }
 

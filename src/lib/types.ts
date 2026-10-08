@@ -9,6 +9,7 @@ export type Product = {
   image: string;
   description: string;
   prepTime: number;
+  takeawayPackFee?: number;
   popular?: boolean;
   fasting?: boolean;
   available: boolean;

@@ -1,12 +1,12 @@
 import { Page } from "@/components/Shell";
 
 const galleryImages = [
-  "/gallery/amore-1.jpg",
-  "/gallery/amore-2.jpg",
-  "/gallery/amore-3.jpg",
-  "/gallery/amore-4.jpg",
-  "/gallery/amore-5.jpg",
-  "/gallery/amore-6.jpg",
+  "/gallery/amore-1.svg",
+  "/gallery/amore-2.svg",
+  "/gallery/amore-3.svg",
+  "/gallery/amore-4.svg",
+  "/gallery/amore-5.svg",
+  "/gallery/amore-6.svg",
 ];
 
 export default function Gallery() {

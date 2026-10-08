@@ -6,6 +6,8 @@ import { LanguageButton } from "./GoogleTranslate";
 import { useCart, useFavorites } from "./Providers";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
+import InstallAppButton from "./InstallAppButton";
+import ThemeToggle from "./ThemeToggle";
 
 const nav = [
   ["Foods","/menu?category=Burgers"],
@@ -39,6 +41,8 @@ export function Header(){
           <Link href="/cart" aria-label="Cart" className="cart-btn">
             <ShoppingBag size={19}/><span>Cart</span>{count>0&&<b>{count}</b>}
           </Link>
+          <InstallAppButton compact/>
+          <ThemeToggle/>
           <LanguageButton/>
           <button type="button" aria-label={open?"Close menu":"Open menu"} aria-expanded={open} onClick={()=>setOpen(v=>!v)} className="icon-btn mobile-menu-btn">{open?<X size={21}/>:<Menu size={21}/>}</button>
         </div>
@@ -51,7 +55,7 @@ export function Header(){
           {[["Home","/",Home],["Menu","/menu",UtensilsCrossed],["Special Offers","/offers",Star],["Favorites","/favorites",Heart],["Track Order","/track-order",ReceiptText],["Gallery","/gallery",MapPin],["About","/about",Info],["Contact","/contact",Phone]].map(([label,href,Icon]:any)=><Link key={href} href={href} onClick={close} className={path===href|| (href!=="/"&&path.startsWith(href))?"active":""}><Icon size={19}/><span>{label}</span><ChevronRightSmall/></Link>)}
         </div>
         <div className="mobile-drawer-footer">
-          <div className="mobile-language-row">
+          <div className="mobile-install-row"><div className="mobile-theme-row"><span className="mobile-language-label">Appearance</span><ThemeToggle/></div><InstallAppButton/></div><div className="mobile-language-row">
             <span className="mobile-language-label">Language / ቋንቋ</span>
             <LanguageButton/>
           </div>
@@ -81,9 +85,9 @@ export function Footer(){
      <div><div className="brand footer-brand brand-logo"><Image src="/amore-logo.png" alt="Amore Cafe" width={64} height={85}/><span>AMORECafe</span></div><p className="footer-copy">Burgers, pizza, fasting dishes and freshly brewed Ethiopian coffee. A full fasting menu, every day of the week.</p></div>
      <div><h4>Explore</h4><Link href="/">Home</Link><Link href="/menu">Menu</Link><Link href="/offers">Exclusive Offers</Link><Link href="/track-order">Track Order</Link><Link href="/gallery">Gallery</Link></div>
      <div><h4>Amore</h4><Link href="/about">About us</Link><Link href="/contact">Contact</Link><Link href="/qr-order">QR codes</Link><Link href="/favorites">Favorites</Link></div>
-     <div><h4>Your Amore</h4><Link href="/menu?category=Fasting">Fasting menu</Link><Link href="/qr-order">Scan at your table</Link><p className="footer-copy mt-4">3PPP+MR2, Kombolcha, Ethiopia<br/>+251 911 234 567<br/>hello@amore.cafe</p></div>
+     <div><h4>Your Amore</h4><Link href="/menu?category=Fasting">Fasting menu</Link><Link href="/qr-order">Scan at your table</Link><p className="footer-copy mt-4">3PPP+MR2, Kombolcha, Ethiopia<br/>+251986239807<br/>amorecafe83@gmail.com</p></div>
    </div>
-   <div className="footer-bottom">© 2026 Amore. All rights reserved.</div>
+   <div className="footer-bottom">© 2026 Amore. All rights reserved. developed by More Lines</div>
  </footer>
 }
 export function Page({children}:{children:React.ReactNode}){return <><Header/><div className="page-in">{children}</div><Footer/><MobileNav/></>}
