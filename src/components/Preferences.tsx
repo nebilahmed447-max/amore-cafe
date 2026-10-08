@@ -15,7 +15,7 @@ type PreferencesValue = {
 const PreferencesContext = createContext<PreferencesValue | null>(null);
 
 const translations: Record<string, string> = {
-  "Home":"መነሻ", "Menu":"ምናሌ", "Offers":"ቅናሾች", "Track Order":"ትዕዛዝ ይከታተሉ", "Gallery":"ፎቶዎች", "About":"ስለ እኛ", "Contact":"ያግኙን", "Favorites":"የተወደዱ", "Cart":"ጋሪ", "View Cart":"ጋሪውን ይመልከቱ",
+  "Home":"መነሻ", "Menu":"ምናሌ", "Offers":"ቅናሾች", "Track Order":"ትዕዛዝ ይከታተሉ", "About":"ስለ እኛ", "Contact":"ያግኙን", "Favorites":"የተወደዱ", "Cart":"ጋሪ", "View Cart":"ጋሪውን ይመልከቱ",
   "Special Offers":"ልዩ ቅናሾች", "QR codes":"QR ኮዶች", "Fasting menu":"የጾም ምናሌ", "Scan at your table":"በጠረጴዛዎ ላይ ስካን ያድርጉ",
   "Explore":"ያስሱ", "Exclusive Offers":"ልዩ ቅናሾች", "About us":"ስለ እኛ", "Your Amore":"የእርስዎ Amore",
   "WELCOME TO AMORE":"ወደ AMORE እንኳን በደህና መጡ", "Made with amore.":"በአሞሬ የተሰራ።", "What's on the menu?":"ምናሌው ላይ ምን አለ?", "Popular picks":"ተወዳጅ ምርጫዎች", "View All":"ሁሉንም ይመልከቱ",
