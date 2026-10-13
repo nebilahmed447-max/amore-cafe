@@ -150,7 +150,7 @@ export default function Checkout(){
     if(!allowedTypes.includes(file.type)&&!allowedExtensions.includes(extension)){setReceipt(null);setReceiptError("Please upload a JPG, PNG, WEBP, GIF, BMP, TIFF, or PDF receipt.");return;}
     const expected=expectedReceiptAmount();
     if(expected===null){setReceipt(null);setReceiptError("Choose your delivery location and wait for the delivery fee to be calculated before attaching your receipt.");return;}
-    setReceiptChecking(true);setReceiptMessage("Checking receipt text and duplicate use…");
+    setReceiptChecking(true);setReceiptMessage("Checking receipt status, amount, payment method and duplicate use…");
     try{const result=await checkReceiptFile(file,expected);setReceiptVerified(true);setReceiptHash(result.receiptHash);setReceiptMessage(result.reason);}
     catch(error){setReceipt(null);setReceiptError(error instanceof Error?error.message:"Could not verify this receipt.");}
     finally{setReceiptChecking(false);}
