@@ -1,0 +1,19 @@
+AMORE CAFE — FREE RECEIPT SCREENING
+
+Changes:
+- Removed OpenAI from the payment-receipt screening route.
+- Uses free Tesseract.js OCR for images and scanned PDF pages.
+- Reads selectable text from PDFs before trying OCR.
+- Accepts JPG/JPEG, PNG, WEBP, GIF, BMP, TIFF, and PDF (max 5 MB).
+- Checks the actual file signature, not just the extension/MIME type.
+- Rejects unsupported/unrelated files when recognizable payment-related text is not found.
+- Checks SHA-256 hashes against orders.receipt_hash to reject exact file duplicates.
+- Does NOT claim the money has arrived: staff must verify the transaction in the real bank/mobile-money account.
+
+Setup:
+1. Keep NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY configured in Vercel.
+2. Ensure supabase/payment-receipt-verification.sql has been run in Supabase SQL Editor.
+3. Deploy the updated project. The package-lock.json is omitted from this archive because it does not contain the new dependencies; run `npm install` after extracting to generate a fresh lockfile.
+4. Try one normal receipt image, one PDF receipt, an unrelated photo, and the same exact receipt file twice.
+
+The first OCR request may take longer while the free English OCR model is downloaded. The screening is heuristic and may reject unclear receipts or occasionally accept unrelated text that resembles a payment receipt. Manual account verification remains required.

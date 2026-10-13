@@ -144,10 +144,13 @@ export default function Checkout(){
     setReceipt(file);setReceiptVerified(false);setReceiptHash("");setReceiptError("");setReceiptMessage("");
     if(!file)return;
     if(file.size>5*1024*1024){setReceipt(null);setReceiptError("Receipt must be 5 MB or smaller.");return;}
-    if(!/^image\/(jpeg|png|webp)$/.test(file.type)){setReceipt(null);setReceiptError("Please upload a JPG, PNG, or WEBP screenshot of your payment receipt. Other photos and PDFs are not accepted.");return;}
+    const allowedTypes=["image/jpeg","image/png","image/webp","image/gif","image/bmp","image/tiff","image/x-tiff","image/x-ms-bmp","application/pdf","application/x-pdf","application/octet-stream"];
+    const allowedExtensions=["jpg","jpeg","png","webp","gif","bmp","tif","tiff","pdf"];
+    const extension=file.name.toLowerCase().split(".").pop()||"";
+    if(!allowedTypes.includes(file.type)&&!allowedExtensions.includes(extension)){setReceipt(null);setReceiptError("Please upload a JPG, PNG, WEBP, GIF, BMP, TIFF, or PDF receipt.");return;}
     const expected=expectedReceiptAmount();
     if(expected===null){setReceipt(null);setReceiptError("Choose your delivery location and wait for the delivery fee to be calculated before attaching your receipt.");return;}
-    setReceiptChecking(true);setReceiptMessage("Checking receipt image, payment amount, and duplicate use…");
+    setReceiptChecking(true);setReceiptMessage("Checking receipt text and duplicate use…");
     try{const result=await checkReceiptFile(file,expected);setReceiptVerified(true);setReceiptHash(result.receiptHash);setReceiptMessage(result.reason);}
     catch(error){setReceipt(null);setReceiptError(error instanceof Error?error.message:"Could not verify this receipt.");}
     finally{setReceiptChecking(false);}
@@ -361,16 +364,16 @@ export default function Checkout(){
               <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[var(--brand-green-soft)] text-lg">📎</div>
               <div>
                 <p className="text-sm font-black">Payment receipt <span className="text-red-500">*</span></p>
-                <p className="mt-1 text-xs leading-5 text-neutral-500">Attach a screenshot of the successful payment. We automatically check the receipt type, amount, payment method, and exact duplicate image.</p>
+                <p className="mt-1 text-xs leading-5 text-neutral-500">Upload the bank or mobile-money receipt. Free OCR checks for payment-related text and exact duplicate files. Staff still confirms the actual payment manually.</p>
               </div>
             </div>
             <label className="mt-4 flex cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed border-neutral-300 bg-neutral-50 px-4 py-6 text-center transition hover:border-[var(--brand-green)] hover:bg-[var(--brand-green-soft)]">
-              <input type="file" accept="image/jpeg,image/png,image/webp" className="sr-only" required={!receipt} onChange={e=>{const file=e.currentTarget.files?.[0]||null;e.currentTarget.value="";void handleReceiptFile(file);}}/>
+              <input type="file" accept=".jpg,.jpeg,.png,.webp,.gif,.bmp,.tif,.tiff,.pdf, image/jpeg,image/png,image/webp,image/gif,image/bmp,image/tiff,application/pdf" className="sr-only" required={!receipt} onChange={e=>{const file=e.currentTarget.files?.[0]||null;e.currentTarget.value="";void handleReceiptFile(file);}}/>
               <span className="rounded-xl bg-white px-4 py-2 text-sm font-bold shadow-sm">{receipt ? "Change receipt" : "Choose receipt"}</span>
-              <span className="mt-2 max-w-full truncate text-xs text-neutral-500">{receipt ? receipt.name : "JPG, PNG or WEBP · Max 5 MB"}</span>
+              <span className="mt-2 max-w-full truncate text-xs text-neutral-500">{receipt ? receipt.name : "JPG, PNG, WEBP, GIF, BMP, TIFF or PDF · Max 5 MB"}</span>
             </label>
             {receipt && <button type="button" onClick={()=>{setReceipt(null);setReceiptVerified(false);setReceiptHash("");setReceiptMessage("");setReceiptError("")}} className="mt-2 text-xs font-bold text-red-600">Remove receipt</button>}
-            {receiptChecking && <p className="mt-2 text-xs font-bold text-[var(--brand-green)]">Verifying receipt…</p>}
+            {receiptChecking && <p className="mt-2 text-xs font-bold text-[var(--brand-green)]">Screening receipt…</p>}
             {receiptMessage && receiptVerified && <p className="mt-2 rounded-xl bg-emerald-50 px-3 py-2 text-xs font-bold text-emerald-800">✓ {receiptMessage}</p>}
             {receiptError && <p className="mt-2 text-xs font-bold text-red-600">{receiptError}</p>}
           </div>

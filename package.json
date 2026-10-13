@@ -13,7 +13,11 @@
     "lucide-react": "^0.468.0",
     "next": "^15.1.0",
     "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "react-dom": "^19.0.0",
+    "@napi-rs/canvas": "^0.1.80",
+    "pdfjs-dist": "^4.10.38",
+    "sharp": "^0.34.5",
+    "tesseract.js": "^6.0.1"
   },
   "devDependencies": {
     "@types/node": "^22.10.0",
