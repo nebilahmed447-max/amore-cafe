@@ -36,10 +36,13 @@ function looksLikePaymentReceipt(text: string): boolean {
 }
 
 async function readPdfText(bytes: Buffer): Promise<string> {
-  const globals = globalThis as typeof globalThis & { DOMMatrix?: typeof DOMMatrix; ImageData?: typeof ImageData; Path2D?: typeof Path2D };
-  globals.DOMMatrix ??= DOMMatrix;
-  globals.ImageData ??= ImageData;
-  globals.Path2D ??= Path2D;
+  
+const globals = globalThis as any;
+
+globals.DOMMatrix ??= DOMMatrix;
+globals.ImageData ??= ImageData;
+globals.Path2D ??= Path2D;
+
   const pdf = await getDocument({ data: new Uint8Array(bytes), useSystemFonts: true }).promise;
   try {
     const pages: string[] = [];
