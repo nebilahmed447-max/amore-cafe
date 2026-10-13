@@ -46,7 +46,26 @@ export async function POST(request: Request) {
       })
     });
     const aiJson = await aiResponse.json().catch(() => ({}));
-    if (!aiResponse.ok) return NextResponse.json({ valid: false, reason: "The receipt checker is temporarily unavailable. Please try again or contact staff." }, { status: 502 });
+    if (!aiResponse.ok) {
+      // Log the provider status and safe error payload so Vercel Runtime Logs
+      // reveal the cause without exposing the API key or uploaded receipt.
+      const providerMessage = String(aiJson?.error?.message || "No provider error message returned.");
+      console.error("OpenAI receipt verification failed", {
+        status: aiResponse.status,
+        code: aiJson?.error?.code || null,
+        type: aiJson?.error?.type || null,
+        message: providerMessage.slice(0, 500),
+      });
+
+      const reason = aiResponse.status === 401 || aiResponse.status === 403
+        ? "Receipt verification API authentication failed. Check the OPENAI_API_KEY in Vercel and redeploy."
+        : aiResponse.status === 429
+          ? "Receipt verification API quota or rate limit reached. Check OpenAI API billing and usage limits."
+          : aiResponse.status === 400
+            ? "Receipt verification sent a request the AI service rejected. Check OPENAI_MODEL and the receipt image format."
+            : "The receipt checker could not complete the AI check. Please try again or contact staff.";
+      return NextResponse.json({ valid: false, reason }, { status: 502 });
+    }
     const content = aiJson.choices?.[0]?.message?.content;
     let parsed: any;
     try { parsed = JSON.parse(content || "{}"); } catch { parsed = {}; }
