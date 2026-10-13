@@ -303,7 +303,7 @@ export default function DeliveryMap({ value, onChange, onAddressChange }: Props)
       // starting with watchPosition alone, especially after a permission prompt.
       navigator.geolocation.getCurrentPosition(onSuccess, onError, {
         enableHighAccuracy: true,
-        timeout: 20000,
+        timeout: 8000,
         maximumAge: 0,
       });
 
@@ -312,12 +312,12 @@ export default function DeliveryMap({ value, onChange, onAddressChange }: Props)
         // Do not replace a useful getCurrentPosition result with a transient watch error.
       }, {
         enableHighAccuracy: true,
-        timeout: 20000,
+        timeout: 8000,
         maximumAge: 5000,
       });
 
       // Mobile GPS can take several seconds, so give it a generous window.
-      locationTimerRef.current = window.setTimeout(finish, 15000);
+      locationTimerRef.current = window.setTimeout(finish, 7000);
     } catch {
       setUsingLocation(false);
       setLocationMessage("This browser could not start location access. Please allow Location for this website or use Search / the map pin.");

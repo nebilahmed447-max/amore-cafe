@@ -32,4 +32,5 @@ export type Order = {
   status: "Pending" | "Confirmed" | "Preparing" | "Ready" | "Completed" | "Cancelled";
   payment: "Cash" | "CBE" | "BOA" | "Tele Birr";
   receiptUrl?: string;
+  receiptHash?: string;
 };

@@ -1,0 +1,26 @@
+{
+  "id": "/waiter",
+  "name": "Amore Waiter",
+  "short_name": "Amore Waiter",
+  "description": "Amore Cafe waiter and service staff panel.",
+  "start_url": "/waiter",
+  "scope": "/waiter",
+  "display": "standalone",
+  "background_color": "#f7f4ee",
+  "theme_color": "#b36b22",
+  "orientation": "any",
+  "icons": [
+    {
+      "src": "/waiter-icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/waiter-icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

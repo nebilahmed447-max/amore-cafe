@@ -200,7 +200,7 @@ function orderToRow(order: Order) {
     delivery_lat: order.deliveryLat ?? null,
     delivery_lng: order.deliveryLng ?? null,
     address: order.customer.address || "",
-    table_number: "",
+    table_number: order.orderType === "pickup" ? (() => { const m = String(order.customer.address || "").match(/^\s*(?:table\s*)?#?\s*(\d+)\s*$/i); return m ? m[1] : ""; })() : "",
     items: order.items,
     subtotal: Math.max(0, order.total - (order.deliveryFee || 0)),
     total: order.total,
@@ -208,6 +208,7 @@ function orderToRow(order: Order) {
     notes: order.customer.notes || "",
     payment: order.payment,
     receipt_url: order.receiptUrl || null,
+    ...(order.receiptHash ? { receipt_hash: order.receiptHash } : {}),
     created_at: order.createdAt,
   };
 }
@@ -233,6 +234,7 @@ function rowToOrder(row: any): Order {
     status: row.status as Order["status"],
     payment: (row.payment || "Cash") as Order["payment"],
     receiptUrl: row.receipt_url ? String(row.receipt_url) : undefined,
+    receiptHash: row.receipt_hash ? String(row.receipt_hash) : undefined,
   };
 }
 

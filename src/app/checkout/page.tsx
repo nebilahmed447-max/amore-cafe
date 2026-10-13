@@ -113,10 +113,45 @@ export default function Checkout(){
   const [copied,setCopied]=useState(false);
   const [receipt,setReceipt]=useState<File|null>(null);
   const [receiptError,setReceiptError]=useState("");
+  const [receiptChecking,setReceiptChecking]=useState(false);
+  const [receiptVerified,setReceiptVerified]=useState(false);
+  const [receiptHash,setReceiptHash]=useState("");
+  const [receiptMessage,setReceiptMessage]=useState("");
   const [location,setLocation]=useState<{lat:number;lng:number;distanceMeters:number;zone:NonNullable<Order["deliveryZone"]>;fee:number}|null>(null);
   const [locating,setLocating]=useState(false);
   const [locationError,setLocationError]=useState("");
   const routeRequestRef=useRef(0);
+
+  function expectedReceiptAmount(){
+    if(form.orderType === "delivery" && (!location || location.distanceMeters < 0)) return null;
+    const fee=form.orderType === "delivery" && location ? getDeliveryFee(location.distanceMeters) : 0;
+    const pack=form.orderType === "delivery" && location ? getTakeawayPackFee(items,location.distanceMeters) : 0;
+    return total + fee + pack;
+  }
+
+  async function checkReceiptFile(file:File, expectedAmount:number){
+    const data=new FormData();
+    data.append("file",file);
+    data.append("expectedAmount",String(expectedAmount));
+    data.append("paymentMethod",form.payment);
+    const response=await fetch("/api/verify-payment-receipt",{method:"POST",body:data,cache:"no-store"});
+    const result=await response.json().catch(()=>({}));
+    if(!response.ok || !result.valid) throw new Error(result.reason || "This receipt did not pass verification.");
+    return result as {valid:boolean;receiptHash:string;reason:string;amountEtb:number|null};
+  }
+
+  async function handleReceiptFile(file:File|null){
+    setReceipt(file);setReceiptVerified(false);setReceiptHash("");setReceiptError("");setReceiptMessage("");
+    if(!file)return;
+    if(file.size>5*1024*1024){setReceipt(null);setReceiptError("Receipt must be 5 MB or smaller.");return;}
+    if(!/^image\/(jpeg|png|webp)$/.test(file.type)){setReceipt(null);setReceiptError("Please upload a JPG, PNG, or WEBP screenshot of your payment receipt. Other photos and PDFs are not accepted.");return;}
+    const expected=expectedReceiptAmount();
+    if(expected===null){setReceipt(null);setReceiptError("Choose your delivery location and wait for the delivery fee to be calculated before attaching your receipt.");return;}
+    setReceiptChecking(true);setReceiptMessage("Checking receipt image, payment amount, and duplicate use…");
+    try{const result=await checkReceiptFile(file,expected);setReceiptVerified(true);setReceiptHash(result.receiptHash);setReceiptMessage(result.reason);}
+    catch(error){setReceipt(null);setReceiptError(error instanceof Error?error.message:"Could not verify this receipt.");}
+    finally{setReceiptChecking(false);}
+  }
 
   async function handleDeliveryPinChange(pin:{lat:number;lng:number}){
     const requestId=++routeRequestRef.current;
@@ -158,6 +193,10 @@ export default function Checkout(){
       setReceiptError("Payment receipt is required for this payment method.");
       return;
     }
+    if(receiptPayments.includes(form.payment) && (!receiptVerified || receiptChecking)){
+      setReceiptError("Wait for the receipt verification to finish, and upload a valid successful-payment receipt.");
+      return;
+    }
     if(form.orderType === "delivery" && (!location || location.distanceMeters < 0)){alert("Please choose your delivery location on the map and wait for the delivery fee to be calculated.");return;}
     setReceiptError("");
     setSubmitting(true);
@@ -188,6 +227,9 @@ export default function Checkout(){
     let uploadedPath:string|undefined;
     try {
       if(receipt && receiptPayments.includes(form.payment)){
+        // Re-check against the final order total after the server recalculates delivery fees.
+        const finalReceiptCheck=await checkReceiptFile(receipt,order.total);
+        order.receiptHash=finalReceiptCheck.receiptHash;
         const safeName=receipt.name.toLowerCase().replace(/[^a-z0-9._-]+/g,"-");
         const requestId = (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
         uploadedPath=`${order.id}/${requestId}-${safeName}`;
@@ -256,7 +298,7 @@ export default function Checkout(){
         <legend className="font-bold">Payment method</legend>
         <div className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
           {paymentMethods.filter(method=>form.orderType === "delivery" ? method.value !== "Cash" : true).map(method=><label key={method.value} className={`cursor-pointer rounded-2xl border p-4 transition ${form.payment===method.value?"border-[var(--brand-green)] bg-[var(--brand-green-soft)]":"border-neutral-200 bg-white hover:border-neutral-300"}`}>
-            <input type="radio" name="payment" value={method.value} checked={form.payment===method.value} onChange={()=>setForm({...form,payment:method.value})} className="sr-only"/>
+            <input type="radio" name="payment" value={method.value} checked={form.payment===method.value} onChange={()=>{setForm({...form,payment:method.value});setReceipt(null);setReceiptVerified(false);setReceiptHash("");setReceiptError("");setReceiptMessage("")}} className="sr-only"/>
             <span className="flex items-center justify-between gap-3"><strong className="text-sm">{method.label}</strong><span className={`h-3 w-3 rounded-full border ${form.payment===method.value?"border-[var(--brand-green)] bg-[var(--brand-green)]":"border-neutral-300"}`}/></span>
             <small className="mt-1 block text-[10px] leading-4 text-neutral-500">{method.description}</small>
           </label>)}
@@ -319,15 +361,17 @@ export default function Checkout(){
               <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[var(--brand-green-soft)] text-lg">📎</div>
               <div>
                 <p className="text-sm font-black">Payment receipt <span className="text-red-500">*</span></p>
-                <p className="mt-1 text-xs leading-5 text-neutral-500">After paying, attach a screenshot or PDF of your payment receipt.</p>
+                <p className="mt-1 text-xs leading-5 text-neutral-500">Attach a screenshot of the successful payment. We automatically check the receipt type, amount, payment method, and exact duplicate image.</p>
               </div>
             </div>
             <label className="mt-4 flex cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed border-neutral-300 bg-neutral-50 px-4 py-6 text-center transition hover:border-[var(--brand-green)] hover:bg-[var(--brand-green-soft)]">
-              <input type="file" accept="image/*,application/pdf" className="sr-only" required={!receipt} onChange={e=>{const file=e.target.files?.[0]||null;setReceiptError("");if(file && file.size>5*1024*1024){setReceipt(null);setReceiptError("Receipt must be 5 MB or smaller.");e.currentTarget.value="";return;}setReceipt(file)}}/>
+              <input type="file" accept="image/jpeg,image/png,image/webp" className="sr-only" required={!receipt} onChange={e=>{const file=e.currentTarget.files?.[0]||null;e.currentTarget.value="";void handleReceiptFile(file);}}/>
               <span className="rounded-xl bg-white px-4 py-2 text-sm font-bold shadow-sm">{receipt ? "Change receipt" : "Choose receipt"}</span>
-              <span className="mt-2 max-w-full truncate text-xs text-neutral-500">{receipt ? receipt.name : "JPG, PNG, WEBP or PDF · Max 5 MB"}</span>
+              <span className="mt-2 max-w-full truncate text-xs text-neutral-500">{receipt ? receipt.name : "JPG, PNG or WEBP · Max 5 MB"}</span>
             </label>
-            {receipt && <button type="button" onClick={()=>setReceipt(null)} className="mt-2 text-xs font-bold text-red-600">Remove receipt</button>}
+            {receipt && <button type="button" onClick={()=>{setReceipt(null);setReceiptVerified(false);setReceiptHash("");setReceiptMessage("");setReceiptError("")}} className="mt-2 text-xs font-bold text-red-600">Remove receipt</button>}
+            {receiptChecking && <p className="mt-2 text-xs font-bold text-[var(--brand-green)]">Verifying receipt…</p>}
+            {receiptMessage && receiptVerified && <p className="mt-2 rounded-xl bg-emerald-50 px-3 py-2 text-xs font-bold text-emerald-800">✓ {receiptMessage}</p>}
             {receiptError && <p className="mt-2 text-xs font-bold text-red-600">{receiptError}</p>}
           </div>
         )}
