@@ -131,12 +131,7 @@ function looksLikePaymentReceipt(text: string): boolean {
 
 async function readPdfText(bytes: Buffer): Promise<string> {
   // PDF.js needs canvas globals when it encounters certain graphics/fonts.
-  const globals = globalThis as typeof globalThis & {
-    DOMMatrix?: typeof DOMMatrix;
-    ImageData?: typeof ImageData;
-    Path2D?: typeof Path2D;
-  };
-
+  const globals = globalThis as any;
   globals.DOMMatrix ??= DOMMatrix;
   globals.ImageData ??= ImageData;
   globals.Path2D ??= Path2D;
