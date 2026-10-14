@@ -1,20 +1,17 @@
-# Amore Cafe V32 — Automatic Geographic Delivery Zones
+# Amore Cafe — Fast Duplicate Receipt Check
 
-V32 removes Google Maps and OSRM routing. Delivery pricing is determined locally from the customer's GPS coordinate using the Haversine geographic distance from Amore Cafe. No API key, billing, or external routing service is required.
+## Included
+- `src/app/api/verify-payment-receipt/route.ts`: minimal Next.js API route that computes a SHA-256 hash and checks whether that exact file hash already exists in `orders.receipt_hash`.
 
-Pricing:
-- 0–50 m: FREE
-- 51–600 m: 50 ETB (Near)
-- 601 m–2.5 km: 100 ETB (Medium)
-- >2.5 km: 200 ETB (Far)
+## Install
+1. Copy this file into the matching path in your Amore Cafe project, replacing the existing route.
+2. Keep these Vercel environment variables:
+   - `NEXT_PUBLIC_SUPABASE_URL`
+   - `SUPABASE_SERVICE_ROLE_KEY`
+3. Confirm your Supabase `orders` table has a `receipt_hash` column.
+4. Run `npm run build`, then deploy.
 
-The browser's reported GPS accuracy is shown as information and does not block calculation.
+## Important
+This endpoint only checks for an exact duplicate file. It does not inspect receipt content, validate the amount or payment method, or prove that funds were received. A renamed or edited copy can have a different hash. Staff must confirm payment in the actual bank/mobile-money account.
 
-
-## Latest updates: waiter/delivery history, receipt screening, and dark mode
-
-- `/waiter` and `/delivery` share the same responsive staff UI and include Active orders and Order history tabs.
-- Waiters see only assigned table numbers. The `/admin` → **Staff & Tables** screen can create staff accounts, add unlimited table numbers, assign/reassign tables, and deactivate staff. Run `supabase/staff-panels-telegram.sql` and then `supabase/staff-management.sql` once. Configure `SUPABASE_SERVICE_ROLE_KEY` as a server-only Vercel variable. Follow `WAITER-TABLE-ASSIGNMENTS.md` for setup.
-- Receipt images are screened before checkout for receipt-like content, successful status, payment method, expected ETB amount, and exact duplicate image hash. Run `supabase/payment-receipt-verification.sql` first. Configure `OPENAI_API_KEY` and `SUPABASE_SERVICE_ROLE_KEY` in Vercel.
-- Receipt screening is a first-pass filter, not proof that a transfer reached the cafe's account. Staff must verify the actual transaction before preparing the order. Cropped/edited duplicates may evade exact-file hash detection.
-- Checkout and staff panel surfaces now use dark-mode-aware colors. The delivery GPS button reports a clear instruction when location services are unavailable, with a shorter wait for the error message.
+This ZIP contains the updated API route and these instructions, not the entire Amore Cafe application repository.
